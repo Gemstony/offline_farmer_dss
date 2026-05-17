@@ -39,27 +39,29 @@ class SyncService {
   /// Sync weather for all farms (typically the first farm – you can extend)
   /// For simplicity, we sync for the first farm (most relevant to user)
   Future<bool> syncWeatherForFirstFarm() async {
-    final farms = _db.getAllFarms();
+    final farms = await _db.getAllFarms();
+
     if (farms.isEmpty) return false;
+
     return await syncWeatherForFarm(farms.first);
   }
 
   /// Sync market prices from API to local cache
-Future<bool> syncMarketPrices() async {
-  if (!await isOnline()) {
-    // print('Offline: cannot sync market prices');
-    return false;
+  Future<bool> syncMarketPrices() async {
+    if (!await isOnline()) {
+      // print('Offline: cannot sync market prices');
+      return false;
+    }
+    try {
+      final prices = await _marketApi.fetchMarketPrices();
+      await _db.cacheMarketPrices(prices);
+      // print('Cached ${prices.length} market prices');
+      return true;
+    } catch (e) {
+      // print('Market sync error: $e');
+      return false;
+    }
   }
-  try {
-    final prices = await _marketApi.fetchMarketPrices();
-    await _db.cacheMarketPrices(prices);
-    // print('Cached ${prices.length} market prices');
-    return true;
-  } catch (e) {
-    // print('Market sync error: $e');
-    return false;
-  }
-}
 
   /// Run full sync: market prices + weather for the first farm
   Future<void> syncAll() async {

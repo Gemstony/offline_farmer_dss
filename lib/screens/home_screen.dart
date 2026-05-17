@@ -5,12 +5,14 @@ import 'market_screen.dart';
 import 'advice_screen.dart';
 import 'camera_screen.dart';
 import 'add_farm_screen.dart';
+import 'login_screen.dart'; // added
 import '../widgets/offline_alert.dart';
 import '../widgets/language_switcher.dart';
 import '../providers/farm_provider.dart';
 import '../providers/weather_provider.dart';
 import '../providers/sync_provider.dart';
 import '../providers/market_provider.dart';
+import '../services/auth_service.dart'; // added
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -20,6 +22,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedIndex = 0;
+  bool _isSyncing = false;
 
   final List<Widget> _screens = [
     WeatherScreen(),
@@ -35,6 +38,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     'Kitambulisho cha Wadudu',
   ];
 
+  Future<void> _logout() async {
+    final auth = AuthService();
+    await auth.logout();
+    if (mounted) {
+      // Navigate to login screen and clear all previous routes
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return OfflineAlert(
@@ -43,22 +59,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           title: Text(_titles[_selectedIndex]),
           actions: [
             IconButton(
-              icon: const Icon(Icons.sync),
-              onPressed: () async {
-                await ref.read(syncNotifierProvider.future);
-
-                ref.invalidate(weatherDataProvider);
-                ref.invalidate(marketPricesProvider);
-                ref.invalidate(syncNotifierProvider);
-
-                if (!context.mounted) return;
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Market prices and weather updated!')),
-                );
-              },
+              icon: _isSyncing
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.sync),
+              onPressed: _isSyncing
+                  ? null
+                  : () async {
+                      setState(() => _isSyncing = true);
+                      try {
+                        await ref.read(syncNotifierProvider.future);
+                        ref.invalidate(weatherDataProvider);
+                        ref.invalidate(marketPricesProvider);
+                        ref.invalidate(syncNotifierProvider);
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Market prices and weather updated!'),
+                          ),
+                        );
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Imeshindwa kusasisha: $e')),
+                        );
+                      } finally {
+                        if (mounted) setState(() => _isSyncing = false);
+                      }
+                    },
             ),
-            LanguageSwitcher(), // we'll implement later
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: _logout,
+              tooltip: 'Toka',
+            ),
+            const LanguageSwitcher(),
           ],
         ),
         body: _screens[_selectedIndex],
@@ -68,7 +106,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               context,
               MaterialPageRoute(builder: (ctx) => const AddFarmScreen()),
             ).then((_) {
-              // Refresh farms after returning
               ref.invalidate(farmListProvider);
               ref.invalidate(weatherDataProvider);
             });

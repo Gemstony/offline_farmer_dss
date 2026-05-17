@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'services/database_service.dart';
+import 'services/auth_service.dart';
 import 'screens/home_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/add_farm_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await databaseService.init();
-  runApp(ProviderScope(child: MyApp()));
+
+  // Initialize the singleton DatabaseService
+  await DatabaseService().init();
+
+  final auth = AuthService();
+  final isLoggedIn = await auth.isLoggedIn();
+
+  runApp(ProviderScope(child: MyApp(isLoggedIn: isLoggedIn)));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+  const MyApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +31,7 @@ class MyApp extends StatelessWidget {
       title: 'Farmer DSS - Kilimo Msaidizi',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2E7D32), // deep green
+          seedColor: const Color(0xFF2E7D32),
           primary: const Color(0xFF2E7D32),
           secondary: const Color(0xFF66BB6A),
           surface: const Color(0xFFF1F8E9),
@@ -40,7 +49,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: HomeScreen(),
+      home: isLoggedIn ? const HomeScreen() : const LoginScreen(),
     );
   }
 }
