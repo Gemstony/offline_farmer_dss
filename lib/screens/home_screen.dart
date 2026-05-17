@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'weather_screen.dart';
+import 'dashboard_screen.dart';
 import 'market_screen.dart';
 import 'advice_screen.dart';
 import 'camera_screen.dart';
 import 'add_farm_screen.dart';
-import 'login_screen.dart'; // added
+import 'login_screen.dart';
 import '../widgets/offline_alert.dart';
 import '../widgets/language_switcher.dart';
 import '../providers/farm_provider.dart';
 import '../providers/weather_provider.dart';
 import '../providers/sync_provider.dart';
 import '../providers/market_provider.dart';
-import '../services/auth_service.dart'; // added
+import '../services/auth_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -25,14 +25,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _isSyncing = false;
 
   final List<Widget> _screens = [
-    WeatherScreen(),
-    MarketScreen(),
-    AdviceScreen(),
-    CameraScreen(),
+    const DashboardScreen(),
+    const MarketScreen(),
+    const AdviceScreen(),
+    const CameraScreen(),
   ];
 
   final List<String> _titles = [
-    'Hali ya Hewa',
+    'Nyumbani',
     'Bei za Masoko',
     'Ushauri wa Kilimo',
     'Kitambulisho cha Wadudu',
@@ -42,7 +42,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final auth = AuthService();
     await auth.logout();
     if (mounted) {
-      // Navigate to login screen and clear all previous routes
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -74,6 +73,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         await ref.read(syncNotifierProvider.future);
                         ref.invalidate(weatherDataProvider);
                         ref.invalidate(marketPricesProvider);
+                        ref.invalidate(farmListProvider);
                         ref.invalidate(syncNotifierProvider);
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -126,16 +126,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           selectedItemColor: const Color(0xFF2E7D32),
           unselectedItemColor: Colors.grey,
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.cloud), label: 'Hewa'),
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Nyumbani'),
             BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Masoko'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.lightbulb),
-              label: 'Ushauri',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.camera_alt),
-              label: 'Wadudu',
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.lightbulb), label: 'Ushauri'),
+            BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Wadudu'),
           ],
         ),
       ),

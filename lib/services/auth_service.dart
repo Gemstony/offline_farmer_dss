@@ -77,4 +77,9 @@ class AuthService {
     final hash = sha256.convert(bytes);
     return hash.toString();
   }
+
+  /// Get the username of the currently logged‑in user
+  Future<String?> getCurrentUsername() async {
+    return await _secureStorage.read(key: _usernameKey);
+  }
 }
