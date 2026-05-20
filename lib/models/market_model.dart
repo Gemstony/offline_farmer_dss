@@ -12,7 +12,7 @@ class MarketPrice {
   double pricePerKg;        // Tanzanian Shillings (TZS)
 
   @HiveField(2)
-  String marketName;        // e.g., 'Morogoro Market'
+  String marketName;        // example., 'Morogoro Market'
 
   @HiveField(3)
   DateTime lastUpdated;

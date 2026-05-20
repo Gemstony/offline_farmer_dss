@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
-import '../services/pest_detection_service.dart'; // <-- add this
+import '../services/pest_detection_service.dart'; 
 
 class CameraScreen extends ConsumerStatefulWidget {
   const CameraScreen({super.key});

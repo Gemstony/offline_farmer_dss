@@ -10,7 +10,7 @@ class MarketApiService {
 
   /// Fetch current market prices.
   /// Returns a list of MarketPrice objects.
-  /// If a real API endpoint is available, replace the mock logic with a real HTTP call.
+  /// If a real API endpoint is available, i will replace the mock logic with a real HTTP call.
   Future<List<MarketPrice>> fetchMarketPrices() async {
     // TODO: Replace with actual API endpoint when available
     // Example real endpoint (needs API key, adjust accordingly):

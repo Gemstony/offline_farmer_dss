@@ -9,7 +9,7 @@ class Farm {
   String id;
 
   @HiveField(1)
-  String cropType;          // e.g., 'maize', 'rice', 'beans'
+  String cropType;          // example., 'maize', 'rice', 'beans'
 
   @HiveField(2)
   double areaHectares;
@@ -24,7 +24,7 @@ class Farm {
   double longitude;
 
   @HiveField(6)
-  DateTime plantingDate;    // when crop was planted (optional)
+  DateTime plantingDate;    // when crop was planted 
 
   Farm({
     required this.id,

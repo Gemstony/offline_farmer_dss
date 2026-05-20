@@ -8,7 +8,7 @@ final databaseServiceProvider = Provider<DatabaseService>((ref) {
   return DatabaseService(); // returns singleton
 });
 
-// Provider that watches farms list – updates when farms change (but Hive doesn't notify; we'll manually refresh)
+// Provider that watches farms list – updates when farms change in the database
 final farmListProvider = StateNotifierProvider<FarmListNotifier, List<Farm>>((ref) {
   final db = ref.read(databaseServiceProvider);
   return FarmListNotifier(db);
