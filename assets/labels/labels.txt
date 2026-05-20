@@ -1,0 +1,10 @@
+apple_diseased
+apple_healthy
+corn_diseased
+corn_healthy
+grape_diseased
+grape_healthy
+sugarcane_diseased
+sugarcane_healthy
+wheat_diseased
+wheat_healthy

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import '../services/pest_detection_service.dart'; // <-- add this
 
 class CameraScreen extends ConsumerStatefulWidget {
   const CameraScreen({super.key});
@@ -27,7 +28,6 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
         imageQuality: 85,
       );
       if (photo != null) {
-        // Save to a permanent local file to avoid temp deletion
         final appDir = await getApplicationDocumentsDirectory();
         final fileName = 'pest_${DateTime.now().millisecondsSinceEpoch}.jpg';
         final savedPath = path.join(appDir.path, fileName);
@@ -36,8 +36,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
           _capturedImage = savedFile;
           _resultMessage = '';
         });
-        // Simulate AI processing (placeholder for future model)
-        _simulatePestDetection();
+        _detectPest(); // <-- replace _simulatePestDetection
       }
     } catch (e) {
       _showError('Failed to take picture: $e');
@@ -61,26 +60,46 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
           _capturedImage = savedFile;
           _resultMessage = '';
         });
-        _simulatePestDetection();
+        _detectPest(); // <-- replace
       }
     } catch (e) {
       _showError('Failed to pick image: $e');
     }
   }
 
-  void _simulatePestDetection() {
+  Future<void> _detectPest() async {
+    if (_capturedImage == null) return;
     setState(() {
       _isProcessing = true;
       _resultMessage = '';
     });
-    // Simulate AI processing delay
-    Future.delayed(Duration(seconds: 2), () {
+    try {
+      final result = await PestDetectionService().predict(_capturedImage!);
       setState(() {
         _isProcessing = false;
-        // Placeholder message until AI model is integrated
-        _resultMessage = '🔍 AI model not yet integrated.\n\nThis feature will identify pests and diseases from the image once the TensorFlow Lite model is added.';
+        if (result.isSuccess) {
+          String advice = _getAdviceForPest(result.pestName ?? '');
+          _resultMessage = '🐛 ${result.message}\n\n💡 Ushauri: $advice';
+        } else {
+          _resultMessage = result.message;
+        }
       });
-    });
+    } catch (e) {
+      setState(() {
+        _isProcessing = false;
+        _resultMessage = 'Tatizo: $e';
+      });
+    }
+  }
+
+  String _getAdviceForPest(String pestName) {
+    // Simple advice mapping (you can expand)
+    if (pestName.contains('diseased')) {
+      return 'Wasiliana na mtaalam wa kilimo. Tumia dawa inayofaa.';
+    } else if (pestName.contains('healthy')) {
+      return 'Endelea na ulinzi mzuri. Kagua mara kwa mara.';
+    }
+    return 'Wasiliana na mkongwe wa kilimo kwa ushauri zaidi.';
   }
 
   void _showError(String message) {
@@ -119,16 +138,26 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.camera_alt, size: 80, color: Colors.green.shade700),
+                          Icon(
+                            Icons.camera_alt,
+                            size: 80,
+                            color: Colors.green.shade700,
+                          ),
                           SizedBox(height: 16),
                           Text(
                             'Picha itaonekana hapa',
-                            style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade700,
+                            ),
                           ),
                           SizedBox(height: 8),
                           Text(
                             'Chukua picha au chagua kutoka kwenye nyaraka',
-                            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                            ),
                           ),
                         ],
                       ),
@@ -144,7 +173,11 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.broken_image, size: 64, color: Colors.red),
+                                    Icon(
+                                      Icons.broken_image,
+                                      size: 64,
+                                      color: Colors.red,
+                                    ),
                                     Text('Image could not be loaded'),
                                   ],
                                 ),
@@ -171,7 +204,10 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
-                                BoxShadow(color: Colors.grey.shade300, blurRadius: 4)
+                                BoxShadow(
+                                  color: Colors.grey.shade300,
+                                  blurRadius: 4,
+                                ),
                               ],
                             ),
                             child: Text(

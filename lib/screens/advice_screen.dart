@@ -147,12 +147,13 @@ class AdviceScreen extends ConsumerWidget {
     // 1. Planting advice based on next 3 days rainfall
     final next3Days = forecast.take(3);
     double totalRain = next3Days.fold(0, (sum, day) => sum + day.rainfallMm);
+
     if (totalRain < 10) {
       list.add(
         RecommendationItem(
-          title: 'Kumwagilia',
+          title: 'Kumwagilia Mazao',
           description:
-              'Mvua kidogo inatarajiwa siku 3 zijazo. Anza kumwagilia ikiwa udongo ni mchanga.',
+              'Kiasi cha mvua kinachotarajiwa katika siku 3 zijazo ni kidogo, hivyo udongo unaweza kupoteza unyevu kwa haraka hasa kama ni wa mchanga. Inashauriwa kuanza kumwagilia mazao mapema asubuhi au jioni ili kusaidia mimea kupata maji ya kutosha kwa ukuaji mzuri. Epuka kumwagilia wakati wa jua kali ili kupunguza upotevu wa maji.',
           category: 'irrigation',
           isUrgent: true,
         ),
@@ -160,9 +161,9 @@ class AdviceScreen extends ConsumerWidget {
     } else if (totalRain > 50) {
       list.add(
         RecommendationItem(
-          title: 'Mvua nyingi',
+          title: 'Tahadhari ya Mvua Kubwa',
           description:
-              'Mvua kubwa inakuja. Hakikisha mifereji ya maji iko wazi ili kuepuka mafuriko.',
+              'Mvua kubwa inatarajiwa kunyesha katika siku chache zijazo. Hakikisha mifereji ya kupitisha maji ipo wazi na maji hayatakusanyika shambani kwani hali hiyo inaweza kusababisha kuoza kwa mizizi, kuharibika kwa mazao au mmomonyoko wa udongo. Kama una mbolea au dawa shambani, zihifadhi sehemu salama zisiosombwa na maji.',
           category: 'general',
           isUrgent: true,
         ),
@@ -174,33 +175,33 @@ class AdviceScreen extends ConsumerWidget {
       if (farm.soilType == 'sandy') {
         list.add(
           RecommendationItem(
-            title: 'Mbolea kwa Mahindi',
+            title: 'Matumizi ya Mbolea kwa Mahindi',
             description:
-                'Udongo wa mchanga unahitaji mbolea ya urea na DAP. Tumia kwa kiwango cha 50kg/hekta.',
+                'Kwa udongo wa mchanga, virutubisho hupotea kwa haraka hivyo mahindi yanahitaji kuongeza nguvu ya lishe mara kwa mara. Inashauriwa kutumia mbolea ya DAP wakati wa kupanda ili kusaidia mizizi kukua vizuri, kisha kuongeza UREA katika hatua ya ukuaji wa majani. Hakikisha mbolea inawekwa kwa kiwango kinachofaa na ichanganywe vizuri na udongo ili kuongeza ufanisi.',
             category: 'fertilizer',
           ),
         );
       } else if (farm.soilType == 'clay') {
         list.add(
           RecommendationItem(
-            title: 'Mbolea kwa Mahindi',
+            title: 'Mbolea kwa Udongo wa Mfinyanzi',
             description:
-                'Udongo wa mfinyanzi – punguza matumizi ya nitrojeni. Tumia mbolea ya fosforasi zaidi.',
+                'Udongo wa mfinyanzi huhifadhi maji na virutubisho kwa muda mrefu zaidi. Kwa mazao ya mahindi, inashauriwa kupunguza matumizi ya mbolea yenye nitrojeni nyingi kwani inaweza kuchelewesha ukuaji wa mahindi. Tumia zaidi mbolea yenye fosforasi na potasiamu kusaidia ukuaji wa mizizi, uimara wa mmea na uzalishaji mzuri.',
             category: 'fertilizer',
           ),
         );
       }
     }
 
-    // 3. Pest risk alert based on humidity (if available) and rainfall
+    // 3. Pest risk alert based on humidity and rainfall
     if (forecast.any(
       (day) => day.rainfallMm > 15 && day.humidityPercent > 70,
     )) {
       list.add(
         RecommendationItem(
-          title: 'Hatari ya wadudu',
+          title: 'Tahadhari ya Wadudu na Magonjwa',
           description:
-              'Hali ya unyevu na mvua inaweza kuleta wadudu (kwa mfano, nzige au viwavi). Kagua shamba lako.',
+              'Kiwango kikubwa cha unyevu pamoja na mvua kinaweza kuongeza hatari ya kushambuliwa na wadudu au magonjwa ya mimea kama viwavi, fangasi au kuoza kwa majani. Inashauriwa kufanya ukaguzi wa mara kwa mara shambani ili kubaini dalili za mapema. Ondoa mimea iliyoathirika na tumia dawa sahihi za kuzuia wadudu au magonjwa pale inapohitajika.',
           category: 'pest',
           isUrgent: true,
         ),
@@ -212,21 +213,21 @@ class AdviceScreen extends ConsumerWidget {
       final daysSincePlanting = DateTime.now()
           .difference(farm.plantingDate)
           .inDays;
+
       if (farm.cropType == 'maize' &&
           daysSincePlanting > 90 &&
           daysSincePlanting < 120) {
         list.add(
           RecommendationItem(
-            title: 'Kuvuna Mahindi',
+            title: 'Muda wa Kuvuna Mahindi',
             description:
-                'Mahindi yako yamefikia wiki 12-17. Angalia ikiwa maganda yamekauka – ni wakati wa kuvuna.',
+                'Mahindi yako yanaonekana kufikia hatua nzuri ya kuvunwa kutokana na muda tangu kupandwa. Angalia kama maganda yamekauka, punje zimekuwa ngumu na mmea umeanza kubadilika rangi kuelekea ukavu. Kuvuna kwa wakati husaidia kupunguza hasara inayoweza kusababishwa na wadudu, mvua nyingi au kuanguka kwa mahindi shambani.',
             category: 'harvest',
             isUrgent: false,
           ),
         );
       }
     }
-
     if (list.isEmpty) {
       list.add(
         RecommendationItem(

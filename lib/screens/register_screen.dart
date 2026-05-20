@@ -5,7 +5,7 @@ import 'home_screen.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  const RegisterScreen({super.key});
 
   @override
   ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
