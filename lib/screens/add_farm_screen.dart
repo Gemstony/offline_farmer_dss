@@ -108,24 +108,35 @@ class _AddFarmScreenState extends ConsumerState<AddFarmScreen> {
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Mahali (GPS)',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
+
                     SizedBox(height: 8),
+
                     if (_isLoadingLocation)
                       Center(child: CircularProgressIndicator())
                     else if (_locationError != null)
                       Text(_locationError!, style: TextStyle(color: Colors.red))
                     else if (_currentPosition != null)
                       Text(
-                        'Lat: ${_currentPosition!.latitude}, Lon: ${_currentPosition!.longitude}',
+                        'Lat: ${_currentPosition!.latitude}, '
+                        'Lon: ${_currentPosition!.longitude}',
                       )
                     else
                       Text('Hakuna eneo lililochaguliwa'),
-                    SizedBox(height: 8),
-                    Row(
+
+                    SizedBox(height: 12),
+
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
                         ElevatedButton.icon(
                           onPressed: _getCurrentLocation,
@@ -133,13 +144,23 @@ class _AddFarmScreenState extends ConsumerState<AddFarmScreen> {
                           label: Text('Chukua eneo langu'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
                           ),
                         ),
-                        SizedBox(width: 8),
+
                         OutlinedButton.icon(
                           onPressed: () => _showManualLocationDialog(),
                           icon: Icon(Icons.edit),
                           label: Text('Weka mwenyewe'),
+                          style: OutlinedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                          ),
                         ),
                       ],
                     ),

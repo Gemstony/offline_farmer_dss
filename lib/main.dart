@@ -29,6 +29,7 @@ class MyApp extends StatelessWidget {
         '/add_farm': (context) => const AddFarmScreen(),
       },
       title: 'Farmer DSS - Kilimo Msaidizi',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF2E7D32),

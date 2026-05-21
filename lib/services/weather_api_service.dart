@@ -51,6 +51,8 @@ class WeatherApiService {
           humidityPercent: -1, // Open-Meteo free does not provide humidity in daily; keep -1 as unknown
         ));
       }
+
+      //returning a list of WeatherData objects representing the 7-day forecast
       return forecast;
     } on DioException catch (e) {
       // Network or server error

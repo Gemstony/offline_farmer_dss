@@ -96,7 +96,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onPressed: _logout,
               tooltip: 'Toka',
             ),
-            const LanguageSwitcher(),
+            // const LanguageSwitcher(),
           ],
         ),
         body: _screens[_selectedIndex],

@@ -221,8 +221,9 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
             ),
             Container(
               padding: EdgeInsets.symmetric(vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   ElevatedButton.icon(
                     onPressed: _capturedImage != null ? _clearImage : null,
