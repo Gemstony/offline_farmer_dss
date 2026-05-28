@@ -18,46 +18,8 @@ class OfflineAlert extends ConsumerStatefulWidget {
 }
 
 class _OfflineAlertState extends ConsumerState<OfflineAlert> {
-  DateTime? _lastSyncTime;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadLastSyncTime();
-  }
-
-  Future<void> _loadLastSyncTime() async {
-    // You can store last sync time in shared_preferences or a Hive box.
-    // For now, we'll read from a simple value; implement your own persistence.
-    // Example using Hive (you need to add a box for settings):
-    // final settingsBox = Hive.box('settings');
-    // setState(() { _lastSyncTime = settingsBox.get('lastSyncTime'); });
-  }
-
-  Future<void> _retryConnection() async {
-    // 1. Get the current status from the plugin
-    final connectivityResult = await Connectivity().checkConnectivity();
-
-    // 2. Check if that status matches the 'none' enum value
-    final isOffline = connectivityResult == ConnectivityResult.none;
-    if (isOffline) {
-      // Attempt a sync (optional)
-      // ref.read(syncNotifierProvider).syncAll();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mtandao umepatikana! Jaribu kusasisha tena.'),
-        ),
-      );
-    } else {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Bado hakuna mtandao. Tafadhali washa data au Wi-Fi.'),
-        ),
-      );
-    }
-  }
+  bool _showOfflineBanner = true;
+  bool _lastOfflineStatus = false;
 
   @override
   Widget build(BuildContext context) {
@@ -66,89 +28,56 @@ class _OfflineAlertState extends ConsumerState<OfflineAlert> {
     return connectivityState.when(
       data: (result) {
         final isOffline = result == ConnectivityResult.none;
+
+        // When transitioning from online to offline, show the banner again.
+        if (isOffline != _lastOfflineStatus) {
+          if (isOffline && mounted) {
+            setState(() {
+              _showOfflineBanner = true;
+            });
+          }
+          _lastOfflineStatus = isOffline;
+        }
+
         return Stack(
           children: [
             widget.child,
-            if (isOffline)
+            if (isOffline && _showOfflineBanner)
               Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
+                top: 10,
+                left: 10,
                 child: SafeArea(
                   child: Material(
-                    elevation: 4,
+                    elevation: 2,
+                    borderRadius: BorderRadius.circular(20),
                     child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.orange.shade700,
-                            Colors.orange.shade900,
-                          ],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade800,
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(
                             Icons.wifi_off,
                             color: Colors.white,
-                            size: 28,
+                            size: 16,
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Huna mtandao',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Unatazama taarifa zilizohifadhiwa ndani. Taarifa mpya zitasasishwa mtandao ukishapatikana.',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                if (_lastSyncTime != null)
-                                  Text(
-                                    'Mwisho kusasishwa: ${_formatDate(_lastSyncTime!)}',
-                                    style: TextStyle(
-                                      color: Colors.white60,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          TextButton.icon(
-                            onPressed: _retryConnection,
-                            icon: const Icon(
-                              Icons.refresh,
+                          const SizedBox(width: 4),
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                _showOfflineBanner = false;
+                              });
+                            },
+                            child: const Icon(
+                              Icons.close,
                               color: Colors.white,
-                              size: 18,
-                            ),
-                            label: const Text(
-                              'Jaribu Tena',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            style: TextButton.styleFrom(
-                              backgroundColor: Colors.white24,
+                              size: 16,
                             ),
                           ),
                         ],
@@ -161,11 +90,7 @@ class _OfflineAlertState extends ConsumerState<OfflineAlert> {
         );
       },
       loading: () => widget.child,
-      error: (_, _) => widget.child,
+      error: (_, __) => widget.child,
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
 }

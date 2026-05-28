@@ -7,7 +7,6 @@ import 'camera_screen.dart';
 import 'add_farm_screen.dart';
 import 'login_screen.dart';
 import '../widgets/offline_alert.dart';
-import '../widgets/language_switcher.dart';
 import '../providers/farm_provider.dart';
 import '../providers/weather_provider.dart';
 import '../providers/sync_provider.dart';
