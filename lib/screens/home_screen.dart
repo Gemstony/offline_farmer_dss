@@ -51,6 +51,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final farmsAsync = ref.watch(farmListProvider);
+    final selectedFarmId = ref.watch(selectedFarmIdProvider);
+
     return OfflineAlert(
       child: Scaffold(
         appBar: AppBar(
@@ -73,11 +76,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ref.invalidate(weatherDataProvider);
                         ref.invalidate(marketPricesProvider);
                         ref.invalidate(farmListProvider);
+                        ref.invalidate(selectedFarmProvider);
                         ref.invalidate(syncNotifierProvider);
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Market prices and weather updated!'),
+                            content: Text('Taarifa zimesasishwa!'),
                           ),
                         );
                       } catch (e) {
@@ -95,24 +99,230 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onPressed: _logout,
               tooltip: 'Toka',
             ),
-            // const LanguageSwitcher(),
           ],
         ),
-        body: _screens[_selectedIndex],
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (ctx) => const AddFarmScreen()),
-            ).then((_) {
-              ref.invalidate(farmListProvider);
-              ref.invalidate(weatherDataProvider);
-            });
-          },
-          icon: const Icon(Icons.add),
-          label: const Text('Shamba'),
-          backgroundColor: Colors.green,
+        drawer: Drawer(
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.horizontal(right: Radius.circular(24)),
+          ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                // Header
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF2E7D32), Color(0xFF43A047)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      CircleAvatar(
+                        radius: 28,
+                        backgroundColor: Colors.white24,
+                        child: Icon(
+                          Icons.agriculture,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'Shamba Zangu',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Chagua shamba la kufuatilia',
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Expanded(
+                  child: farmsAsync.when(
+                    data: (farms) {
+                      if (farms.isEmpty) {
+                        return const Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.agriculture_outlined,
+                                size: 70,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: 12),
+                              Text(
+                                'Hakuna shamba bado',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        padding: const EdgeInsets.all(12),
+                        itemCount: farms.length,
+                        itemBuilder: (ctx, index) {
+                          final farm = farms[index];
+                          final isSelected = selectedFarmId == farm.id;
+
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            margin: const EdgeInsets.only(bottom: 10),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? Colors.green.withOpacity(0.12)
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected
+                                    ? Colors.green
+                                    : Colors.grey.shade200,
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.04),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              leading: CircleAvatar(
+                                backgroundColor: isSelected
+                                    ? Colors.green
+                                    : Colors.grey.shade200,
+                                child: Icon(
+                                  Icons.agriculture,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.grey.shade700,
+                                ),
+                              ),
+                              title: Text(
+                                farm.cropType.toUpperCase(),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text('Eneo: ${farm.areaHectares} ha'),
+                              ),
+                              trailing: isSelected
+                                  ? const Icon(
+                                      Icons.check_circle,
+                                      color: Colors.green,
+                                    )
+                                  : const Icon(
+                                      Icons.arrow_forward_ios,
+                                      size: 16,
+                                      color: Colors.grey,
+                                    ),
+                              onTap: () {
+                                ref
+                                    .read(selectedFarmIdProvider.notifier)
+                                    .setSelectedFarmId(farm.id);
+
+                                ref.invalidate(selectedFarmProvider);
+                                ref.invalidate(weatherDataProvider);
+                                ref.invalidate(marketPricesProvider);
+
+                                Navigator.pop(context);
+                              },
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (err, _) => Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text('Error: $err'),
+                      ),
+                    ),
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      icon: const Icon(Icons.add),
+                      label: const Text(
+                        'Ongeza Shamba Mpya',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AddFarmScreen(),
+                          ),
+                        ).then((_) {
+                          ref.invalidate(farmListProvider);
+                          ref.invalidate(farmListNotifierProvider);
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
+        body: _screens[_selectedIndex],
+        floatingActionButton: _selectedIndex == 3
+            ? null // No FAB on camera screen
+            : FloatingActionButton.extended(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (ctx) => const AddFarmScreen()),
+                  ).then((_) {
+                    ref.invalidate(farmListProvider);
+                    ref.invalidate(selectedFarmProvider);
+                    ref.invalidate(weatherDataProvider);
+                  });
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('Shamba'),
+                backgroundColor: Colors.green,
+              ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _selectedIndex,
           onTap: (index) {
@@ -127,8 +337,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Nyumbani'),
             BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Masoko'),
-            BottomNavigationBarItem(icon: Icon(Icons.lightbulb), label: 'Ushauri'),
-            BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Wadudu'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.lightbulb),
+              label: 'Ushauri',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.camera_alt),
+              label: 'Wadudu',
+            ),
           ],
         ),
       ),

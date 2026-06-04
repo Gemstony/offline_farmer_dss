@@ -4,17 +4,16 @@ import '../providers/market_provider.dart';
 import '../widgets/loading_indicator.dart';
 import '../providers/sync_provider.dart';
 
-
 class MarketScreen extends ConsumerWidget {
   const MarketScreen({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final marketPricesAsync = ref.watch(marketPricesProvider);
-    final syncStatus = ref.watch(syncStatusProvider); // reuse from sync_provider
+    final syncStatus = ref.watch(syncStatusProvider);
 
     return RefreshIndicator(
       onRefresh: () async {
-        // Trigger full sync (includes market prices)
         await ref.read(syncNotifierProvider.future);
         ref.invalidate(marketPricesProvider);
       },
@@ -135,9 +134,7 @@ class MarketScreen extends ConsumerWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
-  }
+  String _formatDate(DateTime date) => '${date.day}/${date.month}/${date.year}';
 
   IconData _getCropIcon(String crop) {
     switch (crop.toLowerCase()) {

@@ -296,7 +296,7 @@ class _AddFarmScreenState extends ConsumerState<AddFarmScreen> {
     final db = ref.read(databaseServiceProvider);
     await db.upsertFarm(newFarm);
     // Refresh farm list provider
-    ref.read(farmListProvider.notifier).refresh();
+    await ref.read(farmListNotifierProvider.notifier).refresh();
 
     // Optionally trigger weather sync for this farm
     final sync = ref.read(syncServiceProvider);

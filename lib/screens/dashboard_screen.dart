@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../providers/farm_provider.dart';
 import '../providers/weather_provider.dart';
 import '../providers/market_provider.dart';
+import '../models/farm_model.dart';
 import '../models/weather_model.dart';
 import '../models/market_model.dart';
 import '../widgets/loading_indicator.dart';
@@ -28,22 +29,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Future<void> _loadUsername() async {
     final auth = AuthService();
     final name = await auth.getCurrentUsername();
-    setState(() {
-      _username = name ?? 'Mkulima';
-    });
+    setState(() => _username = name ?? 'Mkulima');
   }
 
   @override
   Widget build(BuildContext context) {
-    final farmsAsync = ref.watch(farmListProvider);
+    final selectedFarmAsync = ref.watch(selectedFarmProvider);
     final weatherAsync = ref.watch(weatherDataProvider);
     final marketAsync = ref.watch(marketPricesProvider);
 
     return RefreshIndicator(
       onRefresh: () async {
-        // Trigger sync and refresh all
         await ref.read(syncNotifierProvider.future);
         ref.invalidate(farmListProvider);
+        ref.invalidate(selectedFarmProvider);
         ref.invalidate(weatherDataProvider);
         ref.invalidate(marketPricesProvider);
         if (mounted) {
@@ -60,7 +59,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             // Welcome Card
             Card(
               elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -74,7 +75,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     CircleAvatar(
                       radius: 30,
                       backgroundColor: Colors.white,
-                      child: Icon(Icons.person, size: 40, color: Colors.green.shade700),
+                      child: Icon(
+                        Icons.person,
+                        size: 40,
+                        color: Colors.green.shade700,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -103,12 +108,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Farm Summary Card
-            _buildFarmSummary(farmsAsync),
-            
+            // Farm Summary Card based on selected farm
+            selectedFarmAsync.when(
+              data: (farm) => _buildFarmSummary(farm),
+              loading: () => const LoadingIndicator(),
+              error: (err, _) => Text('Error: $err'),
+            ),
             const SizedBox(height: 16),
 
-            // Weather Summary (next 3 days)
+            // Weather Summary
             weatherAsync.when(
               data: (weather) => _buildWeatherSummary(weather),
               loading: () => const LoadingIndicator(),
@@ -116,7 +124,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Market Prices Preview
+            // Market Preview
             marketAsync.when(
               data: (prices) => _buildMarketPreview(prices),
               loading: () => const LoadingIndicator(),
@@ -124,10 +132,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Quick Tip Card (from advice, or static)
+            // Quick Tip Card
             Card(
               elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -139,7 +149,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         const SizedBox(width: 8),
                         const Text(
                           'Kidokezo cha leo',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
@@ -159,8 +172,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildFarmSummary(List farms) {
-    if (farms.isEmpty) {
+  Widget _buildFarmSummary(Farm? farm) {
+    if (farm == null) {
       return Card(
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -170,12 +183,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             children: [
               Icon(Icons.add_box, size: 48, color: Colors.green.shade400),
               const SizedBox(height: 8),
-              const Text('Hujaoongeza shamba lolote bado.'),
+              const Text('Hakuna shamba lililochaguliwa.'),
               const SizedBox(height: 8),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/add_farm');
-                },
+                onPressed: () => Navigator.pushNamed(context, '/add_farm'),
                 child: const Text('Ongeza Shamba'),
               ),
             ],
@@ -183,7 +194,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
       );
     }
-    final farm = farms.first; // show first farm
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -192,12 +202,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Shamba lako', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              'Shamba lako',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
-            Text('Mmea: ${farm.cropType.toUpperCase()}', style: const TextStyle(fontSize: 14)),
-            Text('Eneo: ${farm.areaHectares} hekta', style: const TextStyle(fontSize: 14)),
-            Text('Udongo: ${farm.soilType}', style: const TextStyle(fontSize: 14)),
-            Text('Tarehe ya kupanda: ${_formattedDate(farm.plantingDate)}', style: const TextStyle(fontSize: 14)),
+            Text(
+              'Mmea: ${farm.cropType.toUpperCase()}',
+              style: const TextStyle(fontSize: 14),
+            ),
+            Text(
+              'Eneo: ${farm.areaHectares} hekta',
+              style: const TextStyle(fontSize: 14),
+            ),
+            Text(
+              'Udongo: ${farm.soilType}',
+              style: const TextStyle(fontSize: 14),
+            ),
+            Text(
+              'Tarehe ya kupanda: ${_formattedDate(farm.plantingDate)}',
+              style: const TextStyle(fontSize: 14),
+            ),
           ],
         ),
       ),
@@ -214,7 +239,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
       );
     }
-    final next3 = weather.take(7).toList();
+    final next7 = weather.take(7).toList();
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -223,20 +248,31 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Hali ya hewa (siku 7 zijazo)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              'Hali ya hewa (siku 7 zijazo)',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
-            ...next3.map((day) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
-                  Icon(_getWeatherIcon(day.rainfallMm, day.maxTemp), size: 24, color: Colors.green.shade700),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text('${_formattedDateShort(day.date)}: ${day.minTemp}°C–${day.maxTemp}°C, Mvua ${day.rainfallMm} mm'),
-                  ),
-                ],
+            ...next7.map(
+              (day) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Icon(
+                      _getWeatherIcon(day.rainfallMm, day.maxTemp),
+                      size: 24,
+                      color: Colors.green.shade700,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        '${_formattedDateShort(day.date)}: ${day.minTemp}°C–${day.maxTemp}°C, Mvua ${day.rainfallMm} mm',
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            )),
+            ),
           ],
         ),
       ),
@@ -249,13 +285,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         child: ListTile(
           leading: Icon(Icons.store, color: Colors.grey),
           title: const Text('Hakuna bei za masoko'),
-          subtitle: const Text('Sasisha kwa kuvuta chini au bonyeza ikoni ya kusasisha'),
+          subtitle: const Text(
+            'Sasisha kwa kuvuta chini au bonyeza ikoni ya kusasisha',
+          ),
         ),
       );
     }
-    // Show unique crops (first 3)
     final uniqueCrops = prices.map((p) => p.cropName).toSet().take(3).toList();
-    final previewPrices = prices.where((p) => uniqueCrops.contains(p.cropName)).toList();
+    final previewPrices = prices
+        .where((p) => uniqueCrops.contains(p.cropName))
+        .toList();
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -264,19 +303,33 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Bei za soko', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              'Bei za soko',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
-            ...previewPrices.map((p) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(_getCropIcon(p.cropName), color: Colors.green.shade700),
-              title: Text(p.cropName.toUpperCase()),
-              subtitle: Text(p.marketName),
-              trailing: Text('TZS ${p.pricePerKg.toStringAsFixed(0)}/kg', style: TextStyle(fontWeight: FontWeight.bold)),
-            )),
+            ...previewPrices.map(
+              (p) => ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(
+                  _getCropIcon(p.cropName),
+                  color: Colors.green.shade700,
+                ),
+                title: Text(p.cropName.toUpperCase()),
+                subtitle: Text(p.marketName),
+                trailing: Text(
+                  'TZS ${p.pricePerKg.toStringAsFixed(0)}/kg',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
             if (prices.length > 3)
               const Padding(
                 padding: EdgeInsets.only(top: 8),
-                child: Text('...bofya kitufe cha Masoko kuona zaidi', style: TextStyle(fontStyle: FontStyle.italic)),
+                child: Text(
+                  '...bofya kitufe cha Masoko kuona zaidi',
+                  style: TextStyle(fontStyle: FontStyle.italic),
+                ),
               ),
           ],
         ),
@@ -284,7 +337,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  String _formattedDate(DateTime date) => '${date.day}/${date.month}/${date.year}';
+  String _formattedDate(DateTime date) =>
+      '${date.day}/${date.month}/${date.year}';
   String _formattedDateShort(DateTime date) => '${date.day}/${date.month}';
 
   IconData _getWeatherIcon(double rain, double maxTemp) {
@@ -296,12 +350,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   IconData _getCropIcon(String crop) {
     switch (crop.toLowerCase()) {
-      case 'maize': return Icons.grass;
-      case 'rice': return Icons.agriculture;
-      case 'beans': return Icons.eco;
-      case 'cassava': return Icons.forest;
-      case 'tomatoes': return Icons.local_florist;
-      default: return Icons.agriculture;
+      case 'maize':
+        return Icons.grass;
+      case 'rice':
+        return Icons.agriculture;
+      case 'beans':
+        return Icons.eco;
+      case 'cassava':
+        return Icons.forest;
+      case 'tomatoes':
+        return Icons.local_florist;
+      default:
+        return Icons.agriculture;
     }
   }
 }

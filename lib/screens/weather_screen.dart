@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/weather_provider.dart';
@@ -12,19 +11,19 @@ class WeatherScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final weatherAsync = ref.watch(weatherDataProvider);
-    final farms = ref.watch(farmListProvider);
+    final selectedFarmAsync = ref.watch(selectedFarmProvider);
     final syncStatus = ref.watch(syncStatusProvider);
 
     return RefreshIndicator(
       onRefresh: () async {
-        // Sync weather for the first farm
         final sync = ref.read(syncServiceProvider);
-        if (farms.isNotEmpty) {
-          await sync.syncWeatherForFarm(farms.first);
+        final selectedFarm = await ref.read(selectedFarmProvider.future);
+        if (selectedFarm != null) {
+          await sync.syncWeatherForFarm(selectedFarm);
           ref.invalidate(weatherDataProvider);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Ongeza shamba kwanza ili kuona hali ya hewa.')),
+            const SnackBar(content: Text('Ongeza au chagua shamba kwanza ili kuona hali ya hewa.')),
           );
         }
       },

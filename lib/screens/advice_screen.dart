@@ -11,108 +11,139 @@ class AdviceScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final farms = ref.watch(farmListProvider);
+    final farmsAsync = ref.watch(farmListProvider);
     final weatherAsync = ref.watch(weatherDataProvider);
 
-    if (farms.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.info_outline, size: 64, color: Colors.green.shade700),
-            const SizedBox(height: 16),
-            Text(
-              'Hakuna shamba lililoongezwa.\nTafadhali ongeza shamba kwanza.',
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => Navigator.pushNamed(context, '/add_farm'),
-              child: Text('Ongeza Shamba'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Use the first farm for advice
-    final farm = farms.first;
-
-    return weatherAsync.when(
-      data: (weatherList) {
-        if (weatherList.isEmpty) {
+    return farmsAsync.when(
+      data: (farms) {
+        if (farms.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.cloud_off, size: 64, color: Colors.green.shade700),
+                Icon(
+                  Icons.info_outline,
+                  size: 64,
+                  color: Colors.green.shade700,
+                ),
                 const SizedBox(height: 16),
                 Text(
-                  'Hakuna taarifa za hali ya hewa.\nSasisha hali ya hewa kwanza.',
+                  'Hakuna shamba lililoongezwa.\nTafadhali ongeza shamba kwanza.',
                   textAlign: TextAlign.center,
                 ),
+                const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () => ref.invalidate(weatherDataProvider),
-                  child: Text('Sasisha'),
+                  onPressed: () => Navigator.pushNamed(context, '/add_farm'),
+                  child: Text('Ongeza Shamba'),
                 ),
               ],
             ),
           );
         }
 
-        final recommendations = _generateRecommendations(farm, weatherList);
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.green.shade50, Colors.green.shade100],
-            ),
-          ),
-          child: ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: recommendations.length,
-            itemBuilder: (context, index) {
-              final rec = recommendations[index];
-              return Card(
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: Colors.white.withValues(alpha: 0.9),
-                  ),
-                  child: ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: _getCategoryColor(rec.category),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        _getCategoryIcon(rec.category),
-                        color: Colors.white,
-                      ),
+        // Use the first farm for advice
+        final farm = farms.first;
+
+        return weatherAsync.when(
+          data: (weatherList) {
+            if (weatherList.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.cloud_off,
+                      size: 64,
+                      color: Colors.green.shade700,
                     ),
-                    title: Text(
-                      rec.title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Hakuna taarifa za hali ya hewa.\nSasisha hali ya hewa kwanza.',
+                      textAlign: TextAlign.center,
                     ),
-                    subtitle: Text(rec.description),
-                    isThreeLine: true,
-                    trailing: rec.isUrgent
-                        ? Icon(Icons.warning_amber, color: Colors.orange)
-                        : null,
-                  ),
+                    ElevatedButton(
+                      onPressed: () => ref.invalidate(weatherDataProvider),
+                      child: Text('Sasisha'),
+                    ),
+                  ],
                 ),
               );
-            },
+            }
+
+            final recommendations = _generateRecommendations(farm, weatherList);
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.green.shade50, Colors.green.shade100],
+                ),
+              ),
+              child: ListView.builder(
+                padding: const EdgeInsets.all(12),
+                itemCount: recommendations.length,
+                itemBuilder: (context, index) {
+                  final rec = recommendations[index];
+                  return Card(
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
+                      child: ListTile(
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: _getCategoryColor(rec.category),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _getCategoryIcon(rec.category),
+                            color: Colors.white,
+                          ),
+                        ),
+                        title: Text(
+                          rec.title,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        subtitle: Text(rec.description),
+                        isThreeLine: true,
+                        trailing: rec.isUrgent
+                            ? Icon(Icons.warning_amber, color: Colors.orange)
+                            : null,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+          loading: () => const LoadingIndicator(),
+          error: (err, stack) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, color: Colors.red.shade700, size: 48),
+                const SizedBox(height: 8),
+                Text(
+                  'Imeshindwa kupata taarifa za hali ya hewa:\n$err',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => ref.invalidate(weatherDataProvider),
+                  child: const Text('Jaribu tena'),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -124,12 +155,12 @@ class AdviceScreen extends ConsumerWidget {
             Icon(Icons.error_outline, color: Colors.red.shade700, size: 48),
             const SizedBox(height: 8),
             Text(
-              'Imeshindwa kupata taarifa za hali ya hewa:\n$err',
+              'Imeshindwa kupata orodha ya shamba:\n$err',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => ref.invalidate(weatherDataProvider),
+              onPressed: () => ref.invalidate(farmListProvider),
               child: const Text('Jaribu tena'),
             ),
           ],
