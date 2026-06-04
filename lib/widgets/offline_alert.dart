@@ -90,7 +90,7 @@ class _OfflineAlertState extends ConsumerState<OfflineAlert> {
         );
       },
       loading: () => widget.child,
-      error: (_, __) => widget.child,
+      error: (_, _) => widget.child,
     );
   }
 }
