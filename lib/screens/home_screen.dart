@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:offline_farmer_dss/screens/manage_farms_screen.dart';
 import 'package:offline_farmer_dss/screens/weather_screen.dart';
 import 'dashboard_screen.dart';
 import 'market_screen.dart';
@@ -268,6 +269,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: Text('Error: $err'),
                       ),
                     ),
+                  ),
+                ),
+
+                // Inside the Column, after Expanded and before the existing Padding
+                const Divider(height: 1),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: ListTile(
+                    leading: Icon(Icons.settings, color: Colors.green.shade700),
+                    title: const Text('Dhibiti Shamba'),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Colors.grey,
+                    ),
+                    onTap: () {
+                      Navigator.pop(context); // close drawer
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ManageFarmsScreen(),
+                        ),
+                      );
+                    },
                   ),
                 ),
 
