@@ -487,7 +487,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
           ),
           const SizedBox(width: 10),
           const Text(
-            'AgroScan AI',
+            'WaduduScan AI',
             style: TextStyle(
               color: _AppColors.textPrimary,
               fontSize: 17,
@@ -730,7 +730,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'AgroScan AI inachunguza...',
+                  'WaduduScan AI inachunguza...',
                   style: TextStyle(
                     color: _AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
@@ -791,7 +791,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
           ),
           const SizedBox(width: 10),
           const Text(
-            'AgroScan AI',
+            'WaduduScan AI',
             style: TextStyle(
               color: _AppColors.textPrimary,
               fontWeight: FontWeight.w700,

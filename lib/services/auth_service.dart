@@ -82,4 +82,32 @@ class AuthService {
   Future<String?> getCurrentUsername() async {
     return await _secureStorage.read(key: _usernameKey);
   }
+
+  /// Update username (only if new username is different and not empty)
+  Future<bool> updateUsername(String newUsername) async {
+    if (newUsername.trim().isEmpty) return false;
+    final currentUsername = await getCurrentUsername();
+    if (currentUsername == newUsername) return false;
+    await _secureStorage.write(key: _usernameKey, value: newUsername);
+    return true;
+  }
+
+  /// Change password: requires current password for verification
+  Future<bool> changePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
+    final storedSalt = await _secureStorage.read(key: _saltKey);
+    final storedHash = await _secureStorage.read(key: _passwordHashKey);
+    if (storedSalt == null || storedHash == null) return false;
+
+    final hashedCurrent = _hashPassword(currentPassword, storedSalt);
+    if (hashedCurrent != storedHash) return false;
+
+    final newSalt = _generateSalt();
+    final newHashed = _hashPassword(newPassword, newSalt);
+    await _secureStorage.write(key: _saltKey, value: newSalt);
+    await _secureStorage.write(key: _passwordHashKey, value: newHashed);
+    return true;
+  }
 }
