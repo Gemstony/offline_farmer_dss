@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:offline_farmer_dss/screens/weather_screen.dart';
 import 'dashboard_screen.dart';
 import 'market_screen.dart';
 import 'advice_screen.dart';
@@ -11,6 +12,7 @@ import '../providers/farm_provider.dart';
 import '../providers/weather_provider.dart';
 import '../providers/sync_provider.dart';
 import '../providers/market_provider.dart';
+import '../providers/dashboard_provider.dart';
 import '../services/auth_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -20,11 +22,11 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  int _selectedIndex = 0;
   bool _isSyncing = false;
 
   final List<Widget> _screens = [
     const DashboardScreen(),
+    const WeatherScreen(),
     const MarketScreen(),
     const AdviceScreen(),
     const CameraScreen(),
@@ -32,6 +34,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   final List<String> _titles = [
     'Nyumbani',
+    'Hali ya Hewa',
     'Bei za Masoko',
     'Ushauri wa Kilimo',
     'Kitambulisho cha Wadudu',
@@ -53,11 +56,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final farmsAsync = ref.watch(farmListProvider);
     final selectedFarmId = ref.watch(selectedFarmIdProvider);
+    final selectedIndex = ref.watch(bottomNavIndexProvider);
 
     return OfflineAlert(
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_titles[_selectedIndex]),
+          title: Text(_titles[selectedIndex]),
           actions: [
             IconButton(
               icon: _isSyncing
@@ -305,8 +309,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
         ),
-        body: _screens[_selectedIndex],
-        floatingActionButton: _selectedIndex == 3
+        body: _screens[selectedIndex],
+        floatingActionButton: selectedIndex == 4
             ? null // No FAB on camera screen
             : FloatingActionButton.extended(
                 onPressed: () {
@@ -324,11 +328,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 backgroundColor: Colors.green,
               ),
         bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _selectedIndex,
+          currentIndex: selectedIndex,
           onTap: (index) {
-            setState(() {
-              _selectedIndex = index;
-            });
+            ref.read(bottomNavIndexProvider.notifier).state = index;
           },
           type: BottomNavigationBarType.fixed,
           backgroundColor: const Color(0xFFF1F8E9),
@@ -336,6 +338,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           unselectedItemColor: Colors.grey,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Nyumbani'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.cloud_queue),
+              label: 'Hewa',
+            ),
             BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Masoko'),
             BottomNavigationBarItem(
               icon: Icon(Icons.lightbulb),

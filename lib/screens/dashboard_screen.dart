@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../providers/farm_provider.dart';
 import '../providers/weather_provider.dart';
 import '../providers/market_provider.dart';
+import '../providers/dashboard_provider.dart';
 import '../models/farm_model.dart';
 import '../models/weather_model.dart';
 import '../models/market_model.dart';
@@ -56,11 +57,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome Header (modern gradient card)
+            // Welcome Header
             _buildWelcomeHeader(),
             const SizedBox(height: 20),
 
-            // Farm Section (selected farm or empty state)
+            // Quick Actions Row
+            _buildQuickActions(),
+            const SizedBox(height: 20),
+
+            // Farm Section
             _buildFarmSection(selectedFarmAsync),
             const SizedBox(height: 20),
 
@@ -68,12 +73,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             _buildWeatherSection(weatherAsync),
             const SizedBox(height: 20),
 
-            // Market Section
+            // Market Preview
             _buildMarketSection(marketAsync),
             const SizedBox(height: 16),
 
-            // Quick Tip
-            _buildQuickTip(),
+            // Daily Tip
+            _buildDailyTip(),
           ],
         ),
       ),
@@ -131,12 +136,85 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
+  Widget _buildQuickActions() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Haraka',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _quickActionButton(
+              icon: Icons.cloud_queue,
+              label: 'Hewa',
+              color: Colors.blue,
+              onTap: () => _navigateToScreen(1),
+            ),
+            _quickActionButton(
+              icon: Icons.store,
+              label: 'Masoko',
+              color: Colors.orange,
+              onTap: () => _navigateToScreen(2),
+            ),
+            _quickActionButton(
+              icon: Icons.lightbulb,
+              label: 'Ushauri',
+              color: Colors.purple,
+              onTap: () => _navigateToScreen(3),
+            ),
+            _quickActionButton(
+              icon: Icons.camera_alt,
+              label: 'Kamera',
+              color: Colors.teal,
+              onTap: () => _navigateToScreen(4),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _quickActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(30),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 28, color: color),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToScreen(int index) {
+    ref.read(bottomNavIndexProvider.notifier).state = index;
+  }
+
   Widget _buildFarmSection(AsyncValue<Farm?> farmAsync) {
     return farmAsync.when(
       data: (farm) {
-        if (farm == null) {
-          return _buildEmptyFarmState();
-        }
+        if (farm == null) return _buildEmptyFarmState();
         return _buildFarmCard(farm);
       },
       loading: () => const LoadingIndicator(),
@@ -466,7 +544,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildQuickTip() {
+  Widget _buildDailyTip() {
+    final weekday = DateTime.now().weekday; // Monday=1 ... Sunday=7
+    final tip = _getTipForWeekday(weekday);
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -486,29 +566,60 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Kidokezo cha leo',
-                      style: TextStyle(
+                    Text(
+                      'Kidokezo cha leo (${_getDayName(weekday)})',
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Kumbuka kukagua shamba lako mara kwa mara. Ukiwa na mashaka kuhusu wadudu, tumia kamera katika kitufe cha "Wadudu".',
+                      tip,
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey.shade800,
                       ),
                     ),
+
                   ],
+                  
                 ),
               ),
+              const SizedBox(height: 20),
+
             ],
           ),
         ),
       ),
     );
+  }
+
+  String _getTipForWeekday(int weekday) {
+    const tips = {
+      1: '📅 Jumatatu: Angalia udongo wako kwa unyevu. Mimea inahitaji maji ya kutosha kuanza wiki.',
+      2: '📅 Jumanne: Kagua majani kwa dalili za wadudu au magonjwa. Utambuzi wa mapema huokoa mavuno.',
+      3: '📅 Jumatano: Panga mzunguko wa mazao kwa msimu ujao – hii inazuia kuenea kwa magonjwa.',
+      4: '📅 Alhamisi: Weka mbolea yenye fosforasi na potasiamu kusaidia maua na matunda.',
+      5: '📅 Ijumaa: Orodhesha zana na vifaa unavyohitaji kwa wiki ijayo. Usiache hadi mwisho.',
+      6: '📅 Jumamosi: Fanya ukaguzi kamili wa shamba. Ondoa magugu yanayoshindana na mazao.',
+      7: '📅 Jumapili: Pumzika lakini panga ratiba ya kumwagilia kwa wiki inayoanza kesho.',
+    };
+    return tips[weekday] ??
+        'Kidokezo: Endelea kulima kwa bidii na ufuate mbinu bora za kilimo.';
+  }
+
+  String _getDayName(int weekday) {
+    const days = [
+      'Jumatatu',
+      'Jumanne',
+      'Jumatano',
+      'Alhamisi',
+      'Ijumaa',
+      'Jumamosi',
+      'Jumapili',
+    ];
+    return days[weekday - 1];
   }
 
   String _formattedDate(DateTime date) =>
