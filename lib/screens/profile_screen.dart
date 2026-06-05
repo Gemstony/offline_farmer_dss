@@ -49,7 +49,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (success) {
       setState(() => _successMessage = 'Jina la mtumiaji limebadilishwa!');
     } else {
-      setState(() => _usernameError = 'Hauwezi kubadilisha jina sawa na la sasa');
+      setState(
+        () => _usernameError = 'Hauwezi kubadilisha jina sawa na la sasa',
+      );
     }
   }
 
@@ -59,7 +61,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       return;
     }
     if (_newPasswordController.text.length < 4) {
-      setState(() => _passwordError = 'Nywila mpya lazima iwe na herufi 4 au zaidi');
+      setState(
+        () => _passwordError = 'Nywila mpya lazima iwe na herufi 4 au zaidi',
+      );
       return;
     }
     setState(() {
@@ -89,7 +93,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Wasifu', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Wasifu',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.green.shade700,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -106,7 +113,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           padding: const EdgeInsets.all(20),
           child: Card(
             elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -117,9 +126,37 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     child: CircleAvatar(
                       radius: 50,
                       backgroundColor: Colors.green.shade100,
-                      child: Icon(Icons.person, size: 60, color: Colors.green.shade700),
+                      child: Icon(
+                        Icons.person,
+                        size: 60,
+                        color: Colors.green.shade700,
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 24),
+
+                  if (_successMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade100,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              color: Colors.green.shade700,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text(_successMessage!)),
+                          ],
+                        ),
+                      ),
+                    ),
+
                   const SizedBox(height: 24),
 
                   // Username Section
@@ -135,7 +172,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           controller: _usernameController,
                           decoration: InputDecoration(
                             hintText: 'Jina la mtumiaji',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                             errorText: _usernameError,
                           ),
                         ),
@@ -146,7 +185,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
                         ),
                         child: const Text('Badilisha'),
                       ),
@@ -169,7 +210,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     decoration: InputDecoration(
                       labelText: 'Nywila ya sasa',
                       prefixIcon: const Icon(Icons.lock),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -179,7 +222,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     decoration: InputDecoration(
                       labelText: 'Nywila mpya',
                       prefixIcon: const Icon(Icons.lock_outline),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -189,13 +234,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     decoration: InputDecoration(
                       labelText: 'Thibitisha nywila mpya',
                       prefixIcon: const Icon(Icons.lock_outline),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                   ),
                   if (_passwordError != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: Text(_passwordError!, style: const TextStyle(color: Colors.red)),
+                      child: Text(
+                        _passwordError!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
                     ),
                   const SizedBox(height: 16),
                   SizedBox(
@@ -206,29 +256,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         backgroundColor: Colors.green.shade700,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
                       ),
-                      child: const Text('Badilisha Nywila', style: TextStyle(fontSize: 16)),
+                      child: const Text(
+                        'Badilisha Nywila',
+                        style: TextStyle(fontSize: 16),
+                      ),
                     ),
                   ),
-                  if (_successMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.green.shade100,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.check_circle, color: Colors.green.shade700),
-                            const SizedBox(width: 8),
-                            Expanded(child: Text(_successMessage!)),
-                          ],
-                        ),
-                      ),
-                    ),
                 ],
               ),
             ),

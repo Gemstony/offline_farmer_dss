@@ -43,6 +43,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   ];
 
   Future<void> _logout() async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Thibitisha Kutoka'),
+        content: const Text('Una uhakika unataka kutoka?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Hapana'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Ndiyo'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout != true) {
+      return;
+    }
+
     final auth = AuthService();
     await auth.logout();
     if (mounted) {
