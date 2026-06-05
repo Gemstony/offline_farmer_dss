@@ -53,7 +53,7 @@ class _AddFarmScreenState extends ConsumerState<AddFarmScreen> {
           children: [
             // Crop type dropdown
             DropdownButtonFormField<String>(
-              value: _cropType,
+              initialValue: _cropType,
               decoration: InputDecoration(
                 labelText: 'Aina ya mmea',
                 prefixIcon: const Icon(Icons.agriculture),
@@ -92,7 +92,7 @@ class _AddFarmScreenState extends ConsumerState<AddFarmScreen> {
 
             // Soil type dropdown
             DropdownButtonFormField<String>(
-              value: _soilType,
+              initialValue: _soilType,
               decoration: InputDecoration(
                 labelText: 'Aina ya udongo',
                 prefixIcon: const Icon(Icons.terrain),

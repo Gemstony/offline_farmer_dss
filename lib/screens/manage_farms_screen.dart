@@ -64,8 +64,8 @@ class ManageFarmsScreen extends ConsumerWidget {
             MaterialPageRoute(builder: (_) => const EditFarmScreen()),
           ).then((_) => ref.invalidate(farmListProvider));
         },
-        child: const Icon(Icons.add),
         backgroundColor: Colors.green,
+        child: const Icon(Icons.add),
       ),
     );
   }

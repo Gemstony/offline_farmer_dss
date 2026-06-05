@@ -142,12 +142,12 @@ class AdviceScreen extends ConsumerWidget {
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: onRetry,
-            child: const Text('Jaribu tena'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green.shade700,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
             ),
+            child: const Text('Jaribu tena'),
           ),
         ],
       ),

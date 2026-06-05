@@ -73,7 +73,7 @@ class _EditFarmScreenState extends ConsumerState<EditFarmScreen> {
           padding: const EdgeInsets.all(20),
           children: [
             DropdownButtonFormField<String>(
-              value: _cropType,
+              initialValue: _cropType,
               decoration: InputDecoration(
                 labelText: 'Aina ya mmea',
                 prefixIcon: const Icon(Icons.agriculture),
@@ -97,7 +97,7 @@ class _EditFarmScreenState extends ConsumerState<EditFarmScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _soilType,
+              initialValue: _soilType,
               decoration: InputDecoration(
                 labelText: 'Aina ya udongo',
                 prefixIcon: const Icon(Icons.terrain),

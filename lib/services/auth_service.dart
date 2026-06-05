@@ -110,4 +110,22 @@ class AuthService {
     await _secureStorage.write(key: _passwordHashKey, value: newHashed);
     return true;
   }
+
+
+  /// Check if a username exists (for password reset)
+Future<bool> usernameExists(String username) async {
+  final storedUsername = await _secureStorage.read(key: _usernameKey);
+  return storedUsername == username;
+}
+
+/// Reset password (forgot password flow)
+/// Requires username and new password
+Future<bool> resetPassword(String username, String newPassword) async {
+  if (!await usernameExists(username)) return false;
+  final newSalt = _generateSalt();
+  final newHashed = _hashPassword(newPassword, newSalt);
+  await _secureStorage.write(key: _saltKey, value: newSalt);
+  await _secureStorage.write(key: _passwordHashKey, value: newHashed);
+  return true;
+}
 }

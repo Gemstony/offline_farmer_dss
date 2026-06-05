@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/auth_service.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -109,7 +110,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: 8),
                         Text(
                           'Ingia kwenye akaunti yako',
-                          style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
                         const SizedBox(height: 32),
 
@@ -118,7 +122,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           controller: _usernameController,
                           decoration: InputDecoration(
                             labelText: 'Jina la mtumiaji',
-                            prefixIcon: Icon(Icons.person, color: Colors.green.shade700),
+                            prefixIcon: Icon(
+                              Icons.person,
+                              color: Colors.green.shade700,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -138,7 +145,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           obscureText: true,
                           decoration: InputDecoration(
                             labelText: 'Nywila',
-                            prefixIcon: Icon(Icons.lock, color: Colors.green.shade700),
+                            prefixIcon: Icon(
+                              Icons.lock,
+                              color: Colors.green.shade700,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -155,13 +165,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         const SizedBox(height: 8),
 
+                        // After password field and before error message
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const ForgotPasswordScreen(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                'Sahau nywila?',
+                                style: TextStyle(color: Colors.green.shade700),
+                              ),
+                            ),
+                          ],
+                        ),
+
                         // Error message
                         if (_errorMessage.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               _errorMessage,
-                              style: TextStyle(color: Colors.red.shade700, fontSize: 14),
+                              style: TextStyle(
+                                color: Colors.red.shade700,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
                         const SizedBox(height: 24),
@@ -200,7 +235,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Huna akaunti? ', style: TextStyle(color: Colors.grey.shade700)),
+                            Text(
+                              'Huna akaunti? ',
+                              style: TextStyle(color: Colors.grey.shade700),
+                            ),
                             TextButton(
                               onPressed: _goToRegister,
                               child: Text(
