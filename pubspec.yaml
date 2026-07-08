@@ -71,6 +71,9 @@ dependencies:
   # tflite_flutter: ^0.10.4
   tflite_plus: ^1.0.3
 
+  # for making HTTP requests
+  http: ^1.2.0
+
 # for image processing
   image: ^4.5.2
 dev_dependencies:

@@ -1,10 +1,14 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import '../services/pest_detection_service.dart';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
+import '../services/ai_chat_service.dart';
 
 // ─────────────────────────────────────────────
 //  Design tokens — change once, applies everywhere
@@ -146,6 +150,14 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
   late final AnimationController _fadeController;
   late final Animation<double> _fadeAnim;
 
+  bool _isChatOpen = false;
+  List<Map<String, String>> _chatMessages = [];
+  final ValueNotifier<List<Map<String, String>>> _chatMessagesNotifier =
+      ValueNotifier([]);
+  final ValueNotifier<bool> _isAiThinkingNotifier = ValueNotifier(false);
+  final TextEditingController _chatController = TextEditingController();
+  final ScrollController _chatScrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -164,6 +176,10 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
   void dispose() {
     _pulseController.dispose();
     _fadeController.dispose();
+    _chatMessagesNotifier.dispose();
+    _isAiThinkingNotifier.dispose();
+    _chatController.dispose();
+    _chatScrollController.dispose();
     super.dispose();
   }
 
@@ -421,6 +437,112 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
     );
   }
 
+  Future<void> _sendChatMessage(String userMessage) async {
+    if (userMessage.trim().isEmpty) return;
+
+    // Check internet
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity == ConnectivityResult.none) {
+      _showError('Huna mtandao. Tafadhali washa data au Wi-Fi.');
+      return;
+    }
+
+    _chatMessages.add({'role': 'user', 'content': userMessage.trim()});
+    _chatMessagesNotifier.value = List.from(_chatMessages);
+    _isAiThinkingNotifier.value = true;
+    _scrollToBottom();
+
+    try {
+      final service = AiChatService();
+      final reply = await service.sendMessage(_chatMessages);
+      _chatMessages.add({'role': 'assistant', 'content': reply});
+      _chatMessagesNotifier.value = List.from(_chatMessages);
+      _isAiThinkingNotifier.value = false;
+      _scrollToBottom();
+    } catch (e) {
+      _isAiThinkingNotifier.value = false;
+      _showError('Imeshindwa kupata jibu: $e');
+    }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_chatScrollController.hasClients) {
+        _chatScrollController.animateTo(
+          _chatScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  void _openChatPanel() {
+    if (_lastResult == null || !_lastResult!.isSuccess) {
+      _showError('Hakuna ugonjwa uliotambuliwa bado.');
+      return;
+    }
+    // Prepare detection context
+    final disease = _lastResult!.pestName ?? 'Haijulikani';
+    final advice = _lastResult!.advice ?? '';
+    final sections = _parseSections(advice);
+    final symptoms = sections.firstWhere(
+      (s) => s['label'] == 'Dalili',
+      orElse: () => {'body': 'Hakuna maelezo.'},
+    )['body']!;
+    final action = sections.firstWhere(
+      (s) => s['label'] == 'Kitendo',
+      orElse: () => {'body': 'Wasiliana na mtaalam.'},
+    )['body']!;
+    final prevention = sections.firstWhere(
+      (s) => s['label'] == 'Kinga',
+      orElse: () => {'body': 'Fuatilia shamba lako.'},
+    )['body']!;
+
+    // Build system context
+    final systemPrompt =
+        'You are an expert agricultural assistant. '
+        'The farmer has detected the following crop issue:\n'
+        'Disease/Pest: $disease\n'
+        'Symptoms: $symptoms\n'
+        'Recommended Action: $action\n'
+        'Prevention: $prevention\n\n'
+        'Answer the farmer\'s questions in Swahili or English, '
+        'give practical, clear advice.';
+
+    // Reset chat messages with system prompt (will be sent on first request)
+    _chatMessages = [
+      {'role': 'system', 'content': systemPrompt},
+      {
+        'role': 'assistant',
+        'content':
+            'Mambo! Nimeona matokeo ya uchunguzi. '
+            'Unaweza kuniuliza swali lolote kuhusu ugonjwa huu au jinsi ya kuutibu.',
+      },
+    ];
+    _chatMessagesNotifier.value = List.from(_chatMessages);
+    _isAiThinkingNotifier.value = false;
+    _chatController.clear();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _ChatPanel(
+        messagesNotifier: _chatMessagesNotifier,
+        isThinkingNotifier: _isAiThinkingNotifier,
+        onSend: _sendChatMessage,
+        scrollController: _chatScrollController,
+        onClose: () {
+          setState(() => _isChatOpen = false);
+        },
+      ),
+    ).then((_) {
+      setState(() => _isChatOpen = false);
+    });
+    setState(() => _isChatOpen = true);
+  }
+
   void _clear() {
     setState(() {
       _capturedImage = null;
@@ -449,8 +571,97 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
                   ? _buildEmptyState()
                   : _buildResultView(),
             ),
+            if (_capturedImage != null && !_isTyping && _displayText.isNotEmpty)
+              _buildAskAiBar(),
             _buildActionBar(),
           ],
+        ),
+      ),
+    );
+  }
+
+  // ── Ask-the-AI-advisor bar ───────────────────
+  // A full-width, clearly labeled entry point to the second AI (the chat
+  // advisor). Kept visually distinct from "WaduduScan AI" (the detection
+  // AI, branded with the leaf icon) by using a chat/robot icon + sparkle
+  // badge, a short explanatory line, and a big tappable area — so it's
+  // impossible to miss or confuse with the detection result above it.
+  Widget _buildAskAiBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: _openChatPanel,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: _AppColors.surface,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: _AppColors.border),
+              boxShadow: [
+                BoxShadow(
+                  color: _AppColors.accent.withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: _AppColors.accent.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.smart_toy_rounded,
+                    color: _AppColors.accent,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Muulize Mshauri wa AI',
+                        style: TextStyle(
+                          color: _AppColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Uliza maswali zaidi kuhusu matokeo haya',
+                        style: TextStyle(
+                          color: _AppColors.textMuted,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: _AppColors.accentDim,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: _AppColors.accent,
+                    size: 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -1258,6 +1469,340 @@ class _FeatureChip extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ChatPanel extends StatefulWidget {
+  final ValueListenable<List<Map<String, String>>> messagesNotifier;
+  final ValueListenable<bool> isThinkingNotifier;
+  final Future<void> Function(String) onSend;
+  final ScrollController scrollController;
+  final VoidCallback onClose;
+
+  const _ChatPanel({
+    required this.messagesNotifier,
+    required this.isThinkingNotifier,
+    required this.onSend,
+    required this.scrollController,
+    required this.onClose,
+  });
+
+  @override
+  State<_ChatPanel> createState() => _ChatPanelState();
+}
+
+class _ChatPanelState extends State<_ChatPanel> {
+  final TextEditingController _inputController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    // The keyboard-inset padding below is what makes the sheet slide up
+    // (and shrink) as the keyboard opens, so the input row — and whatever
+    // the user is typing — always stays visible above the keyboard instead
+    // of being hidden underneath it.
+    final screenHeight = MediaQuery.of(context).size.height;
+    final keyboardInset = MediaQuery.of(context).viewInsets.bottom;
+    // When the keyboard is up, shrink the sheet to exactly the space left
+    // above it (instead of a fixed 85% of the screen), so the header,
+    // messages and input row all still fit and nothing is pushed off the
+    // top of the screen.
+    final maxSheetHeight = keyboardInset > 0
+        ? screenHeight - keyboardInset - MediaQuery.of(context).padding.top - 16
+        : screenHeight * 0.85;
+
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeOut,
+      padding: EdgeInsets.only(bottom: keyboardInset),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxSheetHeight),
+        child: Container(
+          decoration: const BoxDecoration(
+            color: _AppColors.bg,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 12, bottom: 8),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: _AppColors.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              // Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: _AppColors.accentDim,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.smart_toy_rounded,
+                        color: _AppColors.accent,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const Text(
+                      'Mshauri wa AI',
+                      style: TextStyle(
+                        color: _AppColors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, size: 20),
+                      color: _AppColors.textSecondary,
+                      onPressed: () {
+                        widget.onClose();
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1, color: _AppColors.border),
+              // Messages
+              Expanded(
+                child: ValueListenableBuilder<List<Map<String, String>>>(
+                  valueListenable: widget.messagesNotifier,
+                  builder: (context, messages, _) {
+                    return ValueListenableBuilder<bool>(
+                      valueListenable: widget.isThinkingNotifier,
+                      builder: (context, isThinking, _) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (widget.scrollController.hasClients) {
+                            widget.scrollController.animateTo(
+                              widget.scrollController.position.maxScrollExtent,
+                              duration: const Duration(milliseconds: 200),
+                              curve: Curves.easeOut,
+                            );
+                          }
+                        });
+                        return ListView.builder(
+                          controller: widget.scrollController,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          itemCount: messages.length + (isThinking ? 1 : 0),
+                          itemBuilder: (ctx, i) {
+                            if (isThinking && i == messages.length) {
+                              return _TypingIndicator();
+                            }
+                            final msg = messages[i];
+                            final isUser = msg['role'] == 'user';
+                            return _MessageBubble(
+                              text: msg['content']!,
+                              isUser: isUser,
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+              // Input row
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+                decoration: BoxDecoration(
+                  color: _AppColors.bg,
+                  border: Border(top: BorderSide(color: _AppColors.border)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _inputController,
+                        decoration: InputDecoration(
+                          hintText: 'Andika swali lako...',
+                          hintStyle: TextStyle(color: _AppColors.textMuted),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: _AppColors.surface,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                        onSubmitted: (_) => _send(),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      onTap: _send,
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: _AppColors.accent,
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: const Icon(
+                          Icons.send_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _send() {
+    final text = _inputController.text.trim();
+    if (text.isEmpty) return;
+    _inputController.clear();
+    widget.onSend(text);
+  }
+}
+
+// Bubble widget
+class _MessageBubble extends StatelessWidget {
+  final String text;
+  final bool isUser;
+  const _MessageBubble({required this.text, required this.isUser});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.8,
+        ),
+        decoration: BoxDecoration(
+          color: isUser ? _AppColors.accent : _AppColors.surface,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(20),
+            topRight: const Radius.circular(20),
+            bottomLeft: isUser
+                ? const Radius.circular(20)
+                : const Radius.circular(4),
+            bottomRight: isUser
+                ? const Radius.circular(4)
+                : const Radius.circular(20),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: isUser ? Colors.white : _AppColors.textPrimary,
+            fontSize: 14,
+            height: 1.5,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Typing indicator
+class _TypingIndicator extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: _AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _Dot(delay: Duration(milliseconds: 0)),
+            _Dot(delay: Duration(milliseconds: 200)),
+            _Dot(delay: Duration(milliseconds: 400)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Dot extends StatefulWidget {
+  final Duration delay;
+  const _Dot({required this.delay});
+
+  @override
+  State<_Dot> createState() => _DotState();
+}
+
+class _DotState extends State<_Dot> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..repeat(reverse: true);
+    _anim = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    Future.delayed(widget.delay, () => _controller.forward());
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (_, __) {
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: _AppColors.textSecondary.withOpacity(
+              0.3 + 0.7 * _anim.value,
+            ),
+            shape: BoxShape.circle,
+          ),
+        );
+      },
     );
   }
 }

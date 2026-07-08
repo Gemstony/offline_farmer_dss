@@ -383,8 +383,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
         body: _screens[selectedIndex],
-        floatingActionButton: selectedIndex == 4
-            ? null // No FAB on camera screen
+        floatingActionButton: (selectedIndex == 4 || selectedIndex == 3)
+            ? null // No FAB on camera or advice screens
             : FloatingActionButton.extended(
                 onPressed: () {
                   Navigator.push(
