@@ -24,15 +24,51 @@
     "prevention": "Kinga: Fanya mzunguko wa mazao (panda mikunde baada ya mahindi). Tumia mbegu mpya za mseto kila msimu. Weka DAP/NPK wakati wa kupanda na CAN/Urea wiki 4-6 baadaye. Panda kwa nafasi 75x25 cm. Kagua shamba mara mbili kwa wiki."
   },
   "tomato_healthy": {
-    "name": "Nyanya (Tomato) - Afya",
+    "name": "Nyanya (Tomato) - Afya Nzuri",
     "symptoms": "Dalili: Majani ya kijani kibichi, maua yanazaa vizuri, matunda yanaendelea kukua bila dalili za wadudu au magonjwa.",
-    "action": "Hatua: Endelea na ulinzi mzuri. Kagua mara kwa mara kwa wadudu. Mwagilia asubuhi ili majani yakauke mchana.",
-    "prevention": "Kinga: Endelea na mzunguko wa mazao. Ondoa magugu mara kwa mara. Weka mbolea kwa usahihi."
+    "action": "Hatua: Endelea na ulinzi mzuri. Kagua mara kwa mara kwa wadudu. Mwagilia asubuhi ili majani yakauke mchana. Hakikisha umwagiliaji ni wa kutosha wakati wa kukomaa kwa matunda.",
+    "prevention": "Kinga: Endelea na mzunguko wa mazao. Ondoa magugu mara kwa mara. Weka mbolea kwa usahihi. Tumia mbegu zilizothibitishwa. Panda kwa nafasi inayofaa kuruhusu mzunguko wa hewa."
   },
   "tomato_leafminer": {
     "name": "Nyanya - Tuta absoluta (Kiwavi wa Nyanya)",
-    "symptoms": "Dalili: Mabano madogo meupe kwenye majani (mines), majani kujikunja na kukauka. Maboa kwenye matunda na kuoza mapema.",
+    "symptoms": "Dalili: Mabano madogo meupe kwenye majani (mines), majani kujikunja na kukauka. Maboa kwenye matunda na kuoza mapema. Uvunaji unapungua kwa kiasi kikubwa.",
     "action": "Hatua: Ondoa na teketeza majani na matunda yaliyoathirika. Pulizia dawa (Abamectin, Spinosad, au Bacillus thuringiensis - Bt). Weka mitego ya feromoni. Rudia upuliziaji baada ya siku 7-10. Tumia neti za ulinzi kwa shamba la chungu.",
-    "prevention": "Kinga: Panda aina zinazostahimili. Tibu mbegu kabla ya kupanda. Fanya mzunguko wa mazoa (usipande nyanya mfululizo). Ondoa mimea ya zamani baada ya kuvuna. Weka mitego ya feromoni mapema. Tumia Bt kwa udhibiti wa kibaolojia."
+    "prevention": "Kinga: Panda aina zinazostahimili. Tibu mbegu kabla ya kupanda. Fanya mzunguko wa mazao (usipande nyanya mfululizo). Ondoa mimea ya zamani baada ya kuvuna. Weka mitego ya feromoni mapema. Tumia Bt kwa udhibiti wa kibaolojia."
+  },
+  "bean_angular_leaf_spot": {
+    "name": "Maharage - Angular Leaf Spot (Ugonjwa wa Madoa ya Majani ya Maharage)",
+    "symptoms": "Dalili: Madoa ya kahawia yenye umbo la pembe yanayozuiliwa na mishipa ya jani. Madoa yanaweza kuwa na pete nyeusi au kijivu katikati. Majani yaliyoathirika sana yanaweza kukauka na kuanguka. Ugonjwa huenea haraka katika hali ya unyevu na joto la 20-25°C.",
+    "action": "Hatua: Ondoa na teketeza majani yaliyoathirika mara moja. Pulizia dawa ya ukungu (Mancozeb, Chlorothalonil, au Copper-based fungicides) kila baada ya siku 7-10 wakati wa mvua. Punguza msongamano wa mimea ili kuongeza mzunguko wa hewa. Epuka kumwagilia kwa njia ya kunyunyizia (overhead irrigation).",
+    "prevention": "Kinga: Panda mbegu zinazostahimili ugonjwa huu (aina zilizoidhinishwa na TARI). Tibu mbegu kwa dawa ya ukungu kabla ya kupanda. Fanya mzunguko wa mazao kwa miaka 2-3 (usipande maharage mfululizo). Teketeza masalia baada ya kuvuna. Panda kwa nafasi 50x10 cm. Kagua shamba mara 2 kwa wiki."
+  },
+  "bean_healthy": {
+    "name": "Maharage Yenye Afya Nzuri",
+    "symptoms": "Dalili: Majani ya kijani kibichi bila madoa, maua mengi, na maganda yanajaa maharage vizuri. Mmea unakua imara bila dalili za wadudu au magonjwa.",
+    "action": "Hatua: Endelea kumwagilia kwa kutosha hasa wakati wa maua na ukuaji wa maganda. Weka mbolea ya NPK au mbolea ya kikaboni (samadi) ili kuongeza virutubisho. Kagua wadudu (aphids, pod borers) mara kwa mara. Ondoa magugu shambani.",
+    "prevention": "Kinga: Fanya mzunguko wa mazao (panda mahindi au mazao mengine baada ya maharage). Tumia mbegu zilizothibitishwa na zisizo na magonjwa. Weka mbolea kwa usawa. Panda kwa nafasi inayofaa (50 cm kati ya mistari, 10 cm kati ya mimea). Kagua shamba mara mbili kwa wiki."
+  },
+  "bean_rust": {
+    "name": "Maharage - Bean Rust (Ugonjwa wa Kutu wa Maharage)",
+    "symptoms": "Dalili: Madoa madogo ya rangi ya kutu (kahawia-nyekundu) kwenye majani, shina, na maganda. Madoa yanaweza kuwa na pete ya njano. Katika hali mbaya, majani yanakauka mapema na mavuno yanapungua kwa kiasi kikubwa. Huenea haraka wakati wa unyevu na joto la 18-25°C.",
+    "action": "Hatua: Pulizia dawa ya ukungu mara moja (Azoxystrobin, Propiconazole, au Mancozeb). Rudia upuliziaji baada ya siku 10-14. Ondoa na teketeza majani yaliyoathirika sana. Epuka kumwagilia jioni ili majani yakauke usiku. Punguza msongamano wa mimea.",
+    "prevention": "Kinga: Panda aina zinazostahimili kutu (rust-resistant varieties). Tibu mbegu kwa dawa kabla ya kupanda. Fanya mzunguko wa mazao (usipande maharage mfululizo katika shamba moja). Teketeza masalia baada ya kuvuna. Kagua shamba mara 2 kwa wiki hasa wakati wa mvua."
+  },
+  "potato_Early_blight": {
+    "name": "Viazi - Early Blight (Ugonjwa wa Madoa ya Mapema wa Viazi)",
+    "symptoms": "Dalili: Madoa ya kahawia yaliyozungukwa na pete za njano kwenye majani ya chini. Madoa yanakua na kuwa na umbo la shabaha (target spots). Majani yaliyoathirika yanakauka na kuanguka. Ugonjwa hushambulia wakati wa joto la 20-25°C na unyevu wa juu.",
+    "action": "Hatua: Ondoa majani yaliyoathirika chini. Pulizia dawa ya ukungu (Chlorothalonil, Mancozeb, au Azoxystrobin) kila baada ya siku 7-10. Epuka kumwagilia kwa kunyunyizia. Hakikisha mifereji ya maji iko vizuri. Weka mbolea ya potasiamu kuimarisha mmea.",
+    "prevention": "Kinga: Panda aina zinazostahimili Early Blight. Tibu mizizi ya viazi (seed tubers) kabla ya kupanda. Fanya mzunguko wa mazao (usipande viazi mfululizo). Teketeza masalia baada ya kuvuna. Panda kwenye udongo wenye mifereji mzuri. Kagua shamba mara kwa mara."
+  },
+  "potato_Late_blight": {
+    "name": "Viazi - Late Blight (Ugonjwa wa Mdoa wa Marehemu wa Viazi)",
+    "symptoms": "Dalili: Madoa makubwa ya kijivu-kijani kwenye majani yanayogeuka kahawia na kuoza. Katika unyevu, unaweza kuona unga mweupe (sporangia) chini ya majani. Viazi huoza kwenye udongo na harufu mbaya. Ugonjwa huenea haraka wakati wa hali ya baridi na unyevu (10-20°C). Hii ni hatari zaidi kuliko Early Blight.",
+    "action": "Hatua: Hii ni dharura! Pulizia dawa ya ukungu mara moja (Ridomil, Metalaxyl, au Chlorothalonil). Rudia upuliziaji kila baada ya siku 5-7 wakati wa mvua. Ondoa na teketeza majani yaliyoathirika. Ikiwa shamba limeathirika vibaya, vuna mapema ili kuokoa sehemu ya mavuno. Epuka kumwagilia kwa njia ya kunyunyizia.",
+    "prevention": "Kinga: Panda aina zinazostahimili Late Blight (aina zilizoidhinishwa na TARI). Tibu mizizi ya viazi (seed tubers) kwa dawa kabla ya kupanda. Fanya mzunguko wa mazao kwa miaka 3-4. Teketeza masalia yote baada ya kuvuna. Panda kwenye udongo wenye mifereji mzuri. Kagua shamba kila siku wakati wa mvua. Tumia mbegu zilizothibitishwa."
+  },
+  "potato_healthy": {
+    "name": "Viazi Yenye Afya Nzuri",
+    "symptoms": "Dalili: Majani ya kijani kibichi bila madoa, mmea unakua imara, na viazi vinaendelea kukua vizuri ardhini bila dalili za kuoza au wadudu.",
+    "action": "Hatua: Endelea kumwagilia kwa kutosha (hakikisha viazi vina maji wakati wa ukuaji wa viazi). Weka mbolea ya potasiamu na fosforasi. Kagua wadudu (aphids, tuber moths) mara kwa mara. Palilia magugu ili kupunguza ushindani.",
+    "prevention": "Kinga: Fanya mzunguko wa mazao (usipande viazi mfululizo). Tumia mizizi ya viazi (seed tubers) zilizothibitishwa na zisizo na magonjwa. Hakikisha udongo una mifereji mzuri. Panda kwa nafasi inayofaa (60 cm kati ya mistari, 30 cm kati ya mimea). Kagua shamba mara mbili kwa wiki."
   }
 }

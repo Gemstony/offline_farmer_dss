@@ -77,7 +77,7 @@ class _AdviceScreenState extends ConsumerState<AdviceScreen> {
         onPressed: () => _openChatPanel(),
         backgroundColor: Colors.green.shade700,
         foregroundColor: Colors.white,
-        child: const Icon(Icons.chat_bubble_outline_rounded),
+        child: const Icon(Icons.auto_awesome_rounded),
         tooltip: 'Uliza AI',
       ),
     );

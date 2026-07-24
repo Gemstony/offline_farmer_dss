@@ -1,6 +1,12 @@
+bean_angular_leaf_spot
+bean_healthy
+bean_rust
 maize_ET
 maize_MLN
 maize_MSV
 maize_healthy
+potato_Early_blight
+potato_Late_blight
+potato_healthy
 tomato_healthy
 tomato_leafminer

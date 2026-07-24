@@ -478,10 +478,11 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
   }
 
   void _openChatPanel() {
-    if (_lastResult == null || !_lastResult!.isSuccess) {
-      _showError('Hakuna ugonjwa uliotambuliwa bado.');
-      return;
-    }
+    // if (_lastResult == null || !_lastResult!.isSuccess) {
+    //   _showError('Hakuna ugonjwa uliotambuliwa bado.');
+    //   return;
+    // }
+    
     // Prepare detection context
     final disease = _lastResult!.pestName ?? 'Haijulikani';
     final advice = _lastResult!.advice ?? '';
